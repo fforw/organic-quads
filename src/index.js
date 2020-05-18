@@ -12,16 +12,30 @@ function calculateNumberOfFaces(limit)
 
 
 const DEFAULT_CONFIG = {
+    // coordinate width
     width: 0,
+    // coordinate height
     height: 0,
-    edgeLength: 80,
-    maxIterations: 100,
+    // number of rings in the hexagon / number of base intersections of hexaxgon
     numberOfRings: 5,
+    // how many percent of the edges shall we attempt to remove?
     removeEdges: 50,
+    // if true, the graph will be layouted a bit with every render. If false, the graph relaxation happens at creation
     animatedEasing: true,
+
+    /// MOSTLY INTERNAL CONFIG ////
+    
+    // calculated internally to match the height
+    edgeLength: 80,
+    // number of iterations until we give up (we will drop out due to having reached low energy most likely much sooner)
+    maxIterations: 100,
+    // set to false if the graph is done animated on animatedEasing : true
     animating: true,
-    minEnergy: 2
+
+    // Minimum energy at which we stop relaxing the graph
+    minTension: 2
 };
+
 
 
 function updateConfig(config)
@@ -29,7 +43,7 @@ function updateConfig(config)
     config.numFaces = calculateNumberOfFaces(config.numberOfRings)
     config.firstPassLen = config.numFaces * SIZE
     config.firstPassNumEdges = config.numFaces * 3
-    config.edgeLength = (config.height / (config.numberOfRings * 2 + 2)) | 0;
+    config.edgeLength = ( Math.min(config.width, config.height) / (config.numberOfRings * 2 + 2)) | 0;
     config.animating = config.animatedEasing;
     config.relaxCount = 0;
 }
