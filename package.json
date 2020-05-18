@@ -1,6 +1,6 @@
 {
     "name": "@fforw/organic-quads",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Helper class to create hexagon shapes filled with organic looking quads",
     "main": "lib/index.js",
     "esnext": "src/index.js",
