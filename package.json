@@ -1,0 +1,40 @@
+{
+    "name": "@fforw/organic-quads",
+    "version": "0.0.1",
+    "description": "Helper class to create hexagon shapes filled with organic looking quads",
+    "main": "lib/index.js",
+    "esnext": "src/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fforw/organic-quads.git"
+    },
+    "author": "Sven Helmberger",
+    "license": "Apache-2.0",
+    "dependencies": {
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.8.4",
+        "@babel/core": "^7.9.0",
+        "@babel/plugin-proposal-class-properties": "^7.8.3",
+        "@babel/plugin-proposal-decorators": "^7.8.3",
+        "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+        "@babel/preset-env": "^7.9.0",
+        "@babel/preset-react": "^7.9.4",
+        "@babel/register": "^7.9.0",
+        "cross-env": "^6.0.3"
+    },
+    "scripts": {
+        "prepublish": "cross-env NODE_ENV=production babel src --out-dir lib",
+        "watch": "cross-env NODE_ENV=development babel -s -w src --out-dir lib"
+    },
+    "directories": {
+        "lib": "lib"
+    },
+    "keywords": [
+        "quads", "organic"
+    ],
+    "browserslist": [
+        "> 0.25%",
+        "not dead"
+    ]
+}
