@@ -544,7 +544,7 @@ function relaxWeighted(config, graph, maxIterations = 1)
 
     for (let i = 0; i < maxIterations; i++)
     {
-        let energy = 0;
+        let tension = 0;
         for (let j = 0; j < length; j += NODE_SIZE)
         {
             if (!graph[j + 2])
@@ -583,14 +583,14 @@ function relaxWeighted(config, graph, maxIterations = 1)
                 graph[j] = x1;
                 graph[j + 1] = y1;
 
-                energy += dx * dx + dy * dy;
+                tension += dx * dx + dy * dy;
 
             }
         }
 
-        if (energy < config.minEnergy)
+        if (tension < config.minTension)
         {
-            console.log("Reached minimal energy", config.minEnergy, "after", config.relaxCount, "iterations")
+            console.log("Reached minimal tension", config.minTension, "after", config.relaxCount, "iterations")
             return true;
         }
         config.relaxCount++;
