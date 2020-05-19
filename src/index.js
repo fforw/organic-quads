@@ -33,7 +33,9 @@ const DEFAULT_CONFIG = {
     animating: true,
 
     // Minimum energy at which we stop relaxing the graph
-    minTension: 2
+    minTension: 2,
+
+    addQuads: false
 };
 
 
@@ -350,14 +352,22 @@ function calculateNumNodes(config, faces)
 
 const NODE_SIZE = 10;
 
+const QUAD_SIZE = 4;
+
 
 function subdivide(config, faces)
 {
+    const { firstPassLen, addQuads } = config;
+
     const numNodes = calculateNumNodes(config, faces);
 
     const nodes = new Float64Array(numNodes * NODE_SIZE);
 
+
+    const quads = addQuads && new Int32Array(numNodes * QUAD_SIZE);
+
     let pos = 0;
+    let qPos = 0;
 
     const insertNode = (x0, y0, isEdge) => {
 
@@ -398,6 +408,15 @@ function subdivide(config, faces)
 
         return index;
     }
+
+    const addQuad = addQuads && ((n0,n1,n2,n3) => {
+
+        quads[qPos++] = n0;
+        quads[qPos++] = n1;
+        quads[qPos++] = n2;
+        quads[qPos++] = n3;
+
+    });
 
     const insertEdge = (n0, n1) => {
         let count = nodes[n0 + 3];
@@ -486,6 +505,13 @@ function subdivide(config, faces)
             connect(n3, n4);
             connect(n4, n5);
 
+            if (addQuads)
+            {
+                addQuad(n0,n1,n6,n5);
+                addQuad(n1,n2,n3,n6);
+                addQuad(n5,n6,n3,n4);
+            }
+
         }
         else
         {
@@ -527,13 +553,21 @@ function subdivide(config, faces)
             connect(n8, n5);
             connect(n8, n7);
             connect(n8, n1);
+
+            if (addQuads)
+            {
+                addQuad(n0,n1,n8,n7);
+                addQuad(n1,n2,n3,n8);
+                addQuad(n8,n3,n4,n5);
+                addQuad(n7,n8,n5,n6);
+            }
         }
     }
 
     const fillRate = (pos / NODE_SIZE) / numNodes;
     //console.log("SUBDIVIDED: limit = ", numNodes, ", fill rate = ", fillRate);
 
-    return nodes.slice(0, pos);
+    return [nodes.slice(0, pos), quads && quads.slice(0, qPos)];
 }
 
 
@@ -623,12 +657,15 @@ class OrganicQuads {
 
         const faces = createHexagonTriangles(config);
         removeRandomEdges(config, faces)
-        const graph = subdivide(config, faces);
+
+        const [graph, quads] = subdivide(config, faces);
+        this.quads = quads;
+
         if (!config.animating)
         {
             relaxWeighted(config, graph, config.maxIterations);
         }
-        //console.log("GRAPH SIZE", graph.length / NODE_SIZE, graph);
+        //console.log("GRAPH f_size", graph.length / NODE_SIZE, graph);
         this.graph = graph;
 
     }
@@ -788,6 +825,10 @@ class OrganicQuads {
         }
     }
 
+    get nodeSize()
+    {
+        return f_size;
+    }
 }
 
 
