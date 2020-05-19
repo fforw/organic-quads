@@ -1,6 +1,31 @@
 import Vector from "./vector";
+    
+const f_x0 = 0;
+const f_y0 = 1;
+const f_x1 = 2;
+const f_y1 = 3;
+const f_x2 = 4;
+const f_y2 = 5;
+const f_x3 = 6;
+const f_y3 = 7;
+const f_count = 8;
+const f_outmostEdge = 9;
+const f_size = 10;
 
-const SIZE = 10; // count + case(1=odd face 2=outmost tri) + 4 * x/y
+
+
+const g_x = 0;
+const g_y = 1;
+const g_isEdge = 2;
+const g_count = 3;
+const g_edge0 = 4;
+const g_edge1 = 5;
+const g_edge2 = 6;
+const g_edge3 = 7;
+const g_edge4 = 8;
+const g_edge5 = 9;
+const g_size = 10;
+
 const TAU = Math.PI * 2;
 
 const SIXTH = TAU / 6;
@@ -43,7 +68,7 @@ const DEFAULT_CONFIG = {
 function updateConfig(config)
 {
     config.numFaces = calculateNumberOfFaces(config.numberOfRings)
-    config.firstPassLen = config.numFaces * SIZE
+    config.firstPassLen = config.numFaces * f_size
     config.firstPassNumEdges = config.numFaces * 3
     config.edgeLength = ( Math.min(config.width, config.height) / (config.numberOfRings * 2 + 2)) | 0;
     config.animating = config.animatedEasing;
@@ -105,33 +130,35 @@ function createHexagonTriangles(config)
             {
                 if (j & 1)
                 {
-                    faces[off++] = (pos.x) | 0;
-                    faces[off++] = (pos.y) | 0;
-                    faces[off++] = (pos.x + v1.x) | 0;
-                    faces[off++] = (pos.y + v1.y) | 0;
-                    faces[off++] = (pos.x + v2.x) | 0;
-                    faces[off++] = (pos.y + v2.y) | 0;
-                    off += 2;
-                    faces[off++] = 3;
-                    faces[off++] = -1;
+                    faces[off + f_x0] = (pos.x) | 0;
+                    faces[off + f_y0] = (pos.y) | 0;
+                    faces[off + f_x1] = (pos.x + v1.x) | 0;
+                    faces[off + f_y1] = (pos.y + v1.y) | 0;
+                    faces[off + f_x2] = (pos.x + v2.x) | 0;
+                    faces[off + f_y2] = (pos.y + v2.y) | 0;
+                    faces[off + f_count] = 3;
+                    faces[off + f_outmostEdge] = -1;
+
+                    off += f_size;
 
                     pos.add(v2);
                 }
                 else
                 {
 
-                    faces[off++] = (pos.x) | 0;
-                    faces[off++] = (pos.y) | 0;
-                    faces[off++] = (pos.x + v0.x) | 0;
-                    faces[off++] = (pos.y + v0.y) | 0;
-                    faces[off++] = (pos.x + v1.x) | 0;
-                    faces[off++] = (pos.y + v1.y) | 0;
-                    off += 2;
-                    faces[off++] = 3;
-
                     // All tris in the last row all have their edge #1 on the outer edge of the big hexagon
                     const isOutmost = count === limit;
-                    faces[off++] = isOutmost ? 1 : -1;
+
+                    faces[off + f_x0] = (pos.x) | 0;
+                    faces[off + f_y0] = (pos.y) | 0;
+                    faces[off + f_x1] = (pos.x + v0.x) | 0;
+                    faces[off + f_y1] = (pos.y + v0.y) | 0;
+                    faces[off + f_x2] = (pos.x + v1.x) | 0;
+                    faces[off + f_y2] = (pos.y + v1.y) | 0;
+                    faces[f_count] = 3;
+                    faces[f_outmostEdge] = isOutmost ? 1 : -1;
+                    
+                    off += f_size;
                 }
             }
         }
@@ -146,7 +173,7 @@ function createHexagonTriangles(config)
 
 function findOtherEdge(faces, x0, y0, x1, y1, index, out)
 {
-    for (let i = 0; i < faces.length; i += SIZE)
+    for (let i = 0; i < faces.length; i += f_size)
     {
         if (i === index)
         {
@@ -154,16 +181,16 @@ function findOtherEdge(faces, x0, y0, x1, y1, index, out)
         }
 
         // console.log("find", x0, y0, x1, y1, ":",
-        //     faces[i    ], faces[i + 1],
-        //     faces[i + 2], faces[i + 3],
-        //     faces[i + 4], faces[i + 5],
-        //     faces[i + 6], faces[i + 7],
+        //     faces[i + f_x0], faces[i + f_y0],
+        //     faces[i + f_x1], faces[i + f_y1],
+        //     faces[i + f_x2], faces[i + f_y2],
+        //     faces[i + f_x3], faces[i + f_y3],
         // );
 
         const count = faces[i + 8];
         if (
-            faces[i] === x1 && faces[i + 1] === y1 &&
-            faces[i + 2] === x0 && faces[i + 3] === y0
+            faces[i + f_x0] === x1 && faces[i + f_y0] === y1 &&
+            faces[i + f_x1] === x0 && faces[i + f_y1] === y0
         )
         {
             out.index = i;
@@ -171,8 +198,8 @@ function findOtherEdge(faces, x0, y0, x1, y1, index, out)
             return;
         }
         if (
-            faces[i + 2] === x1 && faces[i + 3] === y1 &&
-            faces[i + 4] === x0 && faces[i + 5] === y0
+            faces[i + f_x1] === x1 && faces[i + f_y1] === y1 &&
+            faces[i + f_x2] === x0 && faces[i + f_y2] === y0
         )
         {
             out.index = i;
@@ -183,8 +210,8 @@ function findOtherEdge(faces, x0, y0, x1, y1, index, out)
         if (count === 3)
         {
             if (
-                faces[i + 4] === x1 && faces[i + 5] === y1 &&
-                faces[i] === x0 && faces[i + 1] === y0
+                faces[i + f_x2] === x1 && faces[i + f_y2] === y1 &&
+                faces[i + f_x0] === x0 && faces[i + f_y0] === y0
             )
             {
                 out.index = i;
@@ -195,8 +222,8 @@ function findOtherEdge(faces, x0, y0, x1, y1, index, out)
         else
         {
             if (
-                faces[i + 4] === x1 && faces[i + 5] === y1 &&
-                faces[i + 6] === x0 && faces[i + 7] === y0
+                faces[i + f_x2] === x1 && faces[i + f_y2] === y1 &&
+                faces[i + f_x3] === x0 && faces[i + f_y3] === y0
             )
             {
                 out.index = i;
@@ -205,8 +232,8 @@ function findOtherEdge(faces, x0, y0, x1, y1, index, out)
             }
 
             if (
-                faces[i + 6] === x1 && faces[i + 7] === y1 &&
-                faces[i] === x0 && faces[i] === y0
+                faces[i + f_x3] === x1 && faces[i + f_y3] === y1 &&
+                faces[i + f_x0] === x0 && faces[i + f_y0] === y0
             )
             {
                 out.index = i;
@@ -246,10 +273,10 @@ function removeRandomEdges(config, faces)
 
     for (let i = 0; i < count; i++)
     {
-        const index = ((Math.random() * config.numFaces) | 0) * SIZE;
-        if (faces[index + 8] === 3)
+        const index = ((Math.random() * config.numFaces) | 0) * f_size;
+        if (faces[index + f_count] === 3)
         {
-            const outmostEdge = faces[index + 9];
+            const outmostEdge = faces[index + f_outmostEdge];
             const targetIsOutmostFace = outmostEdge >= 0;
 
             const edge = (Math.random() * 3) | 0;
@@ -260,15 +287,15 @@ function removeRandomEdges(config, faces)
 
                 const x0 = faces[index + edge * 2];
                 const y0 = faces[index + edge * 2 + 1];
-                const x1 = edge === 2 ? faces[index] : faces[index + (edge + 1) * 2];
-                const y1 = edge === 2 ? faces[index + 1] : faces[index + (edge + 1) * 2 + 1];
+                const x1 = edge === 2 ? faces[index + f_x0] : faces[index + (edge + 1) * 2];
+                const y1 = edge === 2 ? faces[index + f_y0] : faces[index + (edge + 1) * 2 + 1];
 
                 findOtherEdge(faces, x0, y0, x1, y1, index, out)
-                if (out.index >= 0 && faces[out.index + 8] === 3)
+                if (out.index >= 0 && faces[out.index + f_count] === 3)
                 {
                     const {index: otherIndex, edge: otherEdge} = out;
-                    const x2 = edge === 0 ? faces[index + 2 * 2] : faces[index + (edge - 1) * 2];
-                    const y2 = edge === 0 ? faces[index + 2 * 2 + 1] : faces[index + (edge - 1) * 2 + 1];
+                    const x2 = edge === 0 ? faces[index + f_x2] : faces[index + (edge - 1) * 2];
+                    const y2 = edge === 0 ? faces[index + f_y2] : faces[index + (edge - 1) * 2 + 1];
 
                     // check if we're merging with an outmost face
                     const outMostEdge = faces[otherIndex + 9];
@@ -278,40 +305,40 @@ function removeRandomEdges(config, faces)
                     // if (otherIsOutmostTri)
                     // {
                     //     console.log("OUTMOST edge before split", printEdge(faces, otherIndex, outMostEdge),"EDGE CASE", otherEdge, "outMostEdge", outMostEdge)
-                    //     console.log("face before", faces.slice(otherIndex, otherIndex + SIZE))
+                    //     console.log("face before", faces.slice(otherIndex, otherIndex + f_size))
                     // }
 
                     faces[otherIndex + 8] = 4;
                     switch (otherEdge)
                     {
                         case 2:
-                            faces[otherIndex + 6] = x2;
-                            faces[otherIndex + 7] = y2;
+                            faces[otherIndex + f_x3] = x2;
+                            faces[otherIndex + f_y3] = y2;
                             break;
                         case 1:
-                            faces[otherIndex + 6] = faces[otherIndex + 4];
-                            faces[otherIndex + 7] = faces[otherIndex + 5];
-                            faces[otherIndex + 4] = x2;
-                            faces[otherIndex + 5] = y2;
+                            faces[otherIndex + f_x3] = faces[otherIndex + f_x2];
+                            faces[otherIndex + f_y3] = faces[otherIndex + f_y2];
+                            faces[otherIndex + f_x2] = x2;
+                            faces[otherIndex + f_y2] = y2;
                             break;
                         case 0:
-                            faces[otherIndex + 6] = faces[otherIndex + 4];
-                            faces[otherIndex + 7] = faces[otherIndex + 5];
-                            faces[otherIndex + 4] = faces[otherIndex + 2];
-                            faces[otherIndex + 5] = faces[otherIndex + 3];
-                            faces[otherIndex + 2] = x2
-                            faces[otherIndex + 3] = y2;
+                            faces[otherIndex + f_x3] = faces[otherIndex + f_x2];
+                            faces[otherIndex + f_y3] = faces[otherIndex + f_y2];
+                            faces[otherIndex + f_x2] = faces[otherIndex + f_x1];
+                            faces[otherIndex + f_y2] = faces[otherIndex + f_y1];
+                            faces[otherIndex + f_x1] = x2
+                            faces[otherIndex + f_y1] = y2;
 
                             if (otherIsOutmostTri)
                             {
-                                faces[otherIndex + 9] = 2;
+                                faces[otherIndex + f_outmostEdge] = 2;
                             }
 
                             break;
                     }
 
                     // remove our face
-                    faces[index + 8] = 0;
+                    faces[index + f_count] = 0;
 
                     success++;
                 }
@@ -329,9 +356,9 @@ function calculateNumNodes(config, faces)
 {
     let tris = 0;
     let quads = 0;
-    for (let i = 0; i < config.firstPassLen; i += SIZE)
+    for (let i = 0; i < config.firstPassLen; i += f_size)
     {
-        const count = faces[i + 8];
+        const count = faces[i + f_count];
 
         if (count === 3)
         {
@@ -350,8 +377,6 @@ function calculateNumNodes(config, faces)
 }
 
 
-const NODE_SIZE = 10;
-
 const QUAD_SIZE = 4;
 
 
@@ -361,7 +386,7 @@ function subdivide(config, faces)
 
     const numNodes = calculateNumNodes(config, faces);
 
-    const nodes = new Float64Array(numNodes * NODE_SIZE);
+    const nodes = new Float64Array(numNodes * g_size);
 
 
     const quads = addQuads && new Int32Array(numNodes * QUAD_SIZE);
@@ -374,7 +399,7 @@ function subdivide(config, faces)
         x0 |= 0;
         y0 |= 0;
 
-        for (let i = 0; i < pos; i += NODE_SIZE)
+        for (let i = 0; i < pos; i += g_size)
         {
             if (Math.abs(nodes[i] - x0) < 2 && Math.abs(nodes[i + 1] - y0) < 2)
             {
@@ -404,7 +429,7 @@ function subdivide(config, faces)
         nodes[pos + 6] = -1;
         nodes[pos + 7] = -1;
 
-        pos += NODE_SIZE;
+        pos += g_size;
 
         return index;
     }
@@ -450,20 +475,20 @@ function subdivide(config, faces)
 
     }
 
-    for (let i = 0; i < config.firstPassLen; i += SIZE)
+    for (let i = 0; i < firstPassLen; i += f_size)
     {
-        const count = faces[i + 8];
+        const count = faces[i + f_count];
         if (count === 0)
         {
             continue;
         }
 
-        const x0 = faces[i]
-        const y0 = faces[i + 1]
-        const x1 = faces[i + 2]
-        const y1 = faces[i + 3]
-        const x2 = faces[i + 4]
-        const y2 = faces[i + 5]
+        const x0 = faces[i + f_x0]
+        const y0 = faces[i + f_y0]
+        const x1 = faces[i + f_x1]
+        const y1 = faces[i + f_y1]
+        const x2 = faces[i + f_x2]
+        const y2 = faces[i + f_y2]
 
         const outmostEdge = faces[i + 9];
 
@@ -515,8 +540,8 @@ function subdivide(config, faces)
         }
         else
         {
-            const x3 = faces[i + 6]
-            const y3 = faces[i + 7]
+            const x3 = faces[i + f_x3]
+            const y3 = faces[i + f_y3]
 
             const m0x = (x0 + x1) / 2;
             const m0y = (y0 + y1) / 2;
@@ -564,7 +589,7 @@ function subdivide(config, faces)
         }
     }
 
-    const fillRate = (pos / NODE_SIZE) / numNodes;
+    const fillRate = (pos / g_size) / numNodes;
     //console.log("SUBDIVIDED: limit = ", numNodes, ", fill rate = ", fillRate);
 
     return [nodes.slice(0, pos), quads && quads.slice(0, qPos)];
@@ -579,13 +604,13 @@ function relaxWeighted(config, graph, maxIterations = 1)
     for (let i = 0; i < maxIterations; i++)
     {
         let tension = 0;
-        for (let j = 0; j < length; j += NODE_SIZE)
+        for (let j = 0; j < length; j += g_size)
         {
-            if (!graph[j + 2])
+            if (!graph[j + g_isEdge])
             {
-                const x0 = graph[j]
-                const y0 = graph[j + 1]
-                const edgeCount = graph[j + 3]
+                const x0 = graph[j + g_x]
+                const y0 = graph[j + g_y]
+                const edgeCount = graph[j + g_count]
 
                 let centerX = 0;
                 let centerY = 0;
@@ -614,8 +639,8 @@ function relaxWeighted(config, graph, maxIterations = 1)
                 const dx = x1 - x0;
                 const dy = y1 - y0;
 
-                graph[j] = x1;
-                graph[j + 1] = y1;
+                graph[j + g_x] = x1;
+                graph[j + g_y] = y1;
 
                 tension += dx * dx + dy * dy;
 
@@ -665,7 +690,7 @@ class OrganicQuads {
         {
             relaxWeighted(config, graph, config.maxIterations);
         }
-        //console.log("GRAPH f_size", graph.length / NODE_SIZE, graph);
+        //console.log("GRAPH f_size", graph.length / g_size, graph);
         this.graph = graph;
 
     }
@@ -695,15 +720,15 @@ class OrganicQuads {
         //
         //
         // let outerCount = 0;
-        // for (let pos = 0; pos < config.firstPassLen; pos += SIZE)
+        // for (let pos = 0; pos < config.firstPassLen; pos += f_size)
         // {
-        //     const count = faces[pos + 8];
+        //     const count = faces[pos + f_count];
         //
         //     if (count >= 3)
         //     {
         //
         //         ctx.beginPath();
-        //         ctx.moveTo(faces[pos ],faces[pos + 1]);
+        //         ctx.moveTo(faces[pos + f_x0 ],faces[pos + f_y0]);
         //
         //         for (let i = 1; i < count; i++)
         //         {
@@ -713,7 +738,7 @@ class OrganicQuads {
         //         ctx.closePath();
         //         ctx.stroke();
         //
-        //         // const outmostEdge = faces[pos + 9];
+        //         // const outmostEdge = faces[pos + f_outmostEdge];
         //         // if (outmostEdge >= 0)
         //         // {
         //         //     ctx.strokeStyle = "#fe0";
@@ -722,7 +747,7 @@ class OrganicQuads {
         //         //
         //         //     if (outmostEdge === count - 1)
         //         //     {
-        //         //         ctx.lineTo(faces[pos  ],faces[pos + 1]);
+        //         //         ctx.lineTo(faces[pos + f_x0 ],faces[pos + f_y0]);
         //         //     }
         //         //     else
         //         //     {
@@ -748,8 +773,8 @@ class OrganicQuads {
 
         function drawEdge(x0, y0, node)
         {
-            const x1 = graph[node];
-            const y1 = graph[node + 1];
+            const x1 = graph[node + g_x];
+            const y1 = graph[node + g_y];
 
             ctx.beginPath();
             ctx.moveTo(x0, y0);
@@ -758,23 +783,23 @@ class OrganicQuads {
         }
 
 
-        for (let i = 0; i < length; i += NODE_SIZE)
+        for (let i = 0; i < length; i += g_size)
         {
-            const x0 = graph[i];
-            const y0 = graph[i + 1];
-            const edgeCount = graph[i + 3];
+            const x0 = graph[i + g_x];
+            const y0 = graph[i + g_y];
+            const edgeCount = graph[i + g_count];
 
             for (let j = 0; j < edgeCount; j++)
             {
-                drawEdge(x0, y0, graph[i + 4 + j])
+                drawEdge(x0, y0, graph[i + g_edge0 + j])
             }
         }
         //
-        // for (let i = 0; i < length; i += NODE_SIZE)
+        // for (let i = 0; i < length; i += g_size)
         // {
-        //     const x0 = graph[i];
-        //     const y0 = graph[i + 1];
-        //     const isEdge = graph[i + 2];
+        //     const x0 = graph[i + g_x];
+        //     const y0 = graph[i + g_y];
+        //     const isEdge = graph[i + g_isEdge];
         //
         //     if (isEdge)
         //     {
@@ -785,7 +810,7 @@ class OrganicQuads {
         // ctx.strokeStyle = "#f00";
         // ctx.lineWidth = 4;
         //
-        // for (let pos = 0; pos < config.firstPassLen; pos += SIZE)
+        // for (let pos = 0; pos < config.firstPassLen; pos += f_size)
         // {
         //     const count = faces[pos + 8];
         //     const outmostEdge = faces[pos + 9];
@@ -806,8 +831,8 @@ class OrganicQuads {
         //         ctx.beginPath();
         //         ctx.moveTo(faces[pos + i * 2], faces[pos + i * 2 + 1]);
         //         ctx.lineTo(
-        //             i === last ? faces[pos    ] : faces[pos + (i+1) * 2],
-        //             i === last ? faces[pos + 1] : faces[pos + (i+1) * 2 + 1]
+        //             i === last ? faces[pos + f_x0 ] : faces[pos + (i+1) * 2],
+        //             i === last ? faces[pos + f_y0 ] : faces[pos + (i+1) * 2 + 1]
         //         );
         //         ctx.stroke();
         //     }
