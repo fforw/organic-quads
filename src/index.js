@@ -1,5 +1,6 @@
 import Vector from "./vector";
-    
+
+
 const f_x0 = 0;
 const f_y0 = 1;
 const f_x1 = 2;
@@ -856,5 +857,7 @@ class OrganicQuads {
     }
 }
 
+
+export Vector from "./vector";
 
 export default OrganicQuads

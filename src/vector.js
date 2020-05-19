@@ -28,15 +28,15 @@ class Vector
 
     add(x,y)
     {
-        if (x instanceof Vector)
-        {
-            this.x += x.x;
-            this.y += x.y;
-        }
-        else
+        if (typeof x === "number")
         {
             this.x += x;
             this.y += y;
+        }
+        else
+        {
+            this.x += x.x;
+            this.y += x.y;
         }
 
         return this;
@@ -51,15 +51,15 @@ class Vector
      */
     subtract(x,y)
     {
-        if (x instanceof Vector)
-        {
-            this.x -= x.x;
-            this.y -= x.y;
-        }
-        else
+        if (typeof x === "number")
         {
             this.x -= x;
             this.y -= y;
+        }
+        else
+        {
+            this.x -= x.x;
+            this.y -= x.y;
         }
 
         return this;
@@ -132,6 +132,28 @@ class Vector
         this.y = x;
 
         return this;
+    }
+
+    /**
+     * Sets the coordinates of this vector
+     *
+     * @param x     {number|Vector} x coordinate or a vector
+     * @param y     {number?} y coordinate, ignored if x is a vector
+     * @returns {Vector} this vector
+     */
+    set(x,y)
+    {
+        if (typeof x === "number")
+        {
+            this.x = x;
+            this.y = y;
+        }
+        else
+        {
+            this.x = x.x;
+            this.y = x.y;
+        }
+
     }
 }
 
