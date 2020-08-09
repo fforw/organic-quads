@@ -52,7 +52,7 @@ Every removed edge turns two base triangles into one base quad which is then sub
 
 Relaxing the graph after removing the edges gives it the organic shape.
 
-[Live interactive demo](http://pronto/test/funky-quads/)
+[Live interactive demo](https://fforw.github.io/funky-quads/)
   
 
 ## Array Structs
